@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 // Retreive inquiries upon call from frontend
 app.get('/inquiries', async (req, res) => {
 	try {
-		const { rows } = await pool.query('SELECT * FROM Inquiries');
+		const { rows } = await pool.query('SELECT * FROM inquiries');
 		res.json(rows);
 	} catch (error) {
 		console.error(error);
