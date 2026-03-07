@@ -4,37 +4,31 @@ const pool = require('./config/db');
 
 const app = express();
 const port = process.env.PORT || 8080;
-
 app.use(express.json());
 
-// Checking if the server runs
-app.get('/', (req, res) => {
-	res.send('Backend server is running!');
-});
+const resources = ['inquiries', 'answers'];
 
-// Retreive inquiries upon call from frontend
-app.get('/inquiries', async (req, res) => {
-	try {
-		const { rows } = await pool.query('SELECT * FROM inquiries');
-		res.json(rows);
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ message: 'Database error' });
-	}
-});
-
-// Retreive answers upon call from frontend
-app.get('/answers', async (req, res) => {
-	try {
-		const { rows } = await pool.query('SELECT * FROM answers');
-		res.json(rows);
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ message: 'Database error' });
-	}
-});
+get_resources()
 
 // Start the server
-app.listen(port, "0.0.0.0", () => {
-	console.log(`Server is running on http://0.0.0.0:${port}`);
-});
+app.get('/', (req, res) => { res.send('Backend server is running!'); });
+app.listen(port, "0.0.0.0", () => { console.log(`Server is running on http://0.0.0.0:${port}`); });
+
+
+
+// == Server Functions ==
+
+// Database -> frontend
+function get_resources() {
+	resources.forEach((resource) => {
+		app.get(`/${resource}`, async (req, res) => {
+			try {
+				const { rows } = await pool.query(`SELECT * FROM ${resource}`);
+				res.json(rows);
+			} catch (error) {
+				console.error(`Error fetching ${resource}:`, error);
+				res.status(500).json({ message: 'Database error' });
+			}
+		});
+	});
+}
