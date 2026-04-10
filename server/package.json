@@ -2,9 +2,9 @@
   "name": "unstuck",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,6 @@
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "mysql2": "^3.18.2"
+    "pg": "^8.19.0"
   }
 }
