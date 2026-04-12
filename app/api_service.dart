@@ -27,6 +27,10 @@ class ApiService {
 					'password': password,
 				}),
 			);
+			return response.statusCode == 201;
+		} catch (e) {
+			print('Registration error: $e');
+			return false;
 		}
 	}
   
@@ -41,6 +45,10 @@ class ApiService {
 					'password': password,
 				}),
 			);
+			return response.statusCode == 200;
+		} catch (e) {
+			print('Login error: $e');
+			return false; // Return false if the request fails
 		}
 	}
   
