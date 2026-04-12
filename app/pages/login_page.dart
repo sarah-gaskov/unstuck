@@ -59,62 +59,93 @@ class _LoginPageState extends State<LoginPage> {
 		}
 	}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+	@override
+	Widget build(BuildContext context) {
+		return Scaffold(
+			body: Center(
+				child: SingleChildScrollView(
+					padding: const EdgeInsets.all(32.0),
+					child: Column(
+						mainAxisAlignment: MainAxisAlignment.center,
+						children: [
+							// App title
+							const Text(
+								'UNSTUCK',
+								style: TextStyle(
+									fontSize: 32,
+									fontWeight: FontWeight.bold,
+									letterSpacing: 4,
+								),
+							),
+							const SizedBox(height: 60),
 
-              // App title
-              const Text(
-                'UNSTUCK',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                ),
-              ),
+							// Username Field
+							TextField(
+								controller: _usernameController,
+								decoration: const InputDecoration(
+									labelText: 'Username',
+									border: OutlineInputBorder(),
+									prefixIcon: Icon(Icons.person),
+								),
+							),
+							const SizedBox(height: 16),
 
-              const SizedBox(height: 60),
+							// Password Field
+							TextField(
+								controller: _passwordController,
+								obscureText: true,
+								decoration: const InputDecoration(
+									labelText: 'Password',
+									border: OutlineInputBorder(),
+									prefixIcon: Icon(Icons.lock),
+								),
+							),
+							const SizedBox(height: 32),
 
-              // Login button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
-                  child: const Text('LOGIN'),
-                ),
-              ),
+							if (_isLoading)
+							const CircularProgressIndicator()
+							else ...[
+								// Login button
+								SizedBox(
+									width: double.infinity,
+									child: ElevatedButton(
+										onPressed: () => _handleAuth(true),
+										child: const Text('LOGIN'),
+									),
+								),
+								const SizedBox(height: 12),
 
-              const SizedBox(height: 12),
+								// Register button
+								SizedBox(
+									width: double.infinity,
+									child: ElevatedButton(
+										onPressed: () => _handleAuth(false),
+										style: ElevatedButton.styleFrom(
+											backgroundColor: Colors.deepPurple.shade50,
+										),
+										child: const Text('REGISTER'),
+									),
+								),
+								const SizedBox(height: 24),
 
-              // Continue as guest button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
-                  child: const Text('Continue as guest'),
-                ),
-              ),
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+								// Continue as guest button
+								SizedBox(
+									width: double.infinity,
+									child: OutlinedButton(
+										onPressed: () {
+											Navigator.pushReplacement(
+												context,
+												MaterialPageRoute(builder: (context) => const HomePage()),
+											);
+										},
+										child: const Text('Continue as guest'),
+									),
+								),
+							],
+						],
+					),
+				),
+			),
+		);
+	}
 }
