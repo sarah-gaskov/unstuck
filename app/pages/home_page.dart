@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../api_service.dart';
+import '../api_service.dart';
 import 'ask_page.dart';
 
 class HomePage extends StatefulWidget {

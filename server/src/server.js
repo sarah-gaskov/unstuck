@@ -18,6 +18,73 @@ app.listen(port, "0.0.0.0", () => { console.log(`Server is running on http://0.0
 
 // == Server Functions ==
 
+// -- Register and Login --
+
+// Register
+
+app.post('/api/register', async (req, res) => {
+	try {
+		const { username, password } = req.body;
+
+		if (!username || !password) {
+			return res.status(400).json({ message: 'Username and password are required' });
+		}
+
+		const saltRounds = 10;
+		const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username`;
+		const result = await pool.query(query, [username, hashedPassword]); //
+
+		res.status(201).json({ success: true, user: result.rows[0] });
+
+	} catch (error) {
+		console.error('Registration error:', error);
+		if (error.code === '23505') {
+			return res.status(400).json({ message: 'Username already exists' });
+		}
+		res.status(500).json({ message: 'Registration failed', error: error.message });
+	}
+});
+
+// Login
+
+app.post('/api/login', async (req, res) => {
+	try {
+		const { username, password } = req.body;
+
+		if (!username || !password) {
+			return res.status(400).json({ message: 'Username and password are required' });
+		}
+
+		const result = await pool.query(`SELECT * FROM users WHERE username = $1`, [username]); //
+
+		if (result.rows.length === 0) {
+			return res.status(401).json({ message: 'Invalid username or password' });
+		}
+
+		const user = result.rows[0];
+
+		const isMatch = await bcrypt.compare(password, user.password);
+
+		if (!isMatch) {
+			return res.status(401).json({ message: 'Invalid username or password' });
+		}
+
+		res.status(200).json({ 
+			success: true, 
+			message: 'Login successful', 
+			user: { id: user.id, username: user.username } 
+		});
+
+	} catch (error) {
+		console.error('Login error:', error);
+		res.status(500).json({ message: 'Login failed', error: error.message });
+	}
+});
+
+// -- Q and A --
+
 // Database -> frontend
 function get_resources() {
 	resources.forEach((resource) => {
