@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./config/db');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 8080;
