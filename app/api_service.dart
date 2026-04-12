@@ -14,8 +14,26 @@ class ApiService {
       return false;
     }
   }
+  
+  // == Login ==
+  
+  Future<bool> loginUser(String username, String password) async {
+	try {
+		final response = await http.post(
+			Uri.parse('$baseUrl/login'),
+			
+			headers: {'Content-Type': 'application/json'},
+			body: jsonEncode({
+				'username': username,
+				'password': password,
+			}),
+		);
+	}
+  }
+  
+  // == Query and Answer ==
 
-  // == Read from the DB ==
+  // - Read from the DB -
 
   //Get all inquiries from database
   Future<List> getInquiries() async {
@@ -45,7 +63,7 @@ class ApiService {
     }
   }
   
-  //== New entry to DB ==
+  //- New entry to DB -
 
   //POST - Add an inquiry to the database
   Future<bool> addInquiry(String title, String body) async {
