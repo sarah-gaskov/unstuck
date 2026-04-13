@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../api_service.dart';
+import '../api_service.dart';
 import 'confirm_page.dart';
 
 class AskPage extends StatefulWidget {
