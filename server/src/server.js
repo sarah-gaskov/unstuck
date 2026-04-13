@@ -85,6 +85,26 @@ app.post('/api/login', async (req, res) => {
 
 // -- Q and A --
 
+// Get QnA (Question and all the answers relating to it)
+function get_qna() {
+	app.get(`/api/qna`, async (req, res) => {
+		try {
+			const { inquiry_id } = req.body;
+			const { inquiry_res } = await pool.query(`SELECT * FROM inquiries WHERE inquiry_id = $1`, [inquiry_id]);
+			const { answers_res } = await pool.query(`SELECT * FROM answers WHERE inquiry_id = $1`, [inquiry_id]);
+			
+			res.json({
+				inquiry: inquiry_res.rows[0] || null,
+				answers: answers_res.rows);
+			});
+				
+		} catch(error) {
+			console.error(`Error fetching ${resource}:`, error);
+			res.status(500).json({ message: 'Database query error' });
+		}
+	});
+}
+
 // Database -> frontend
 function get_resources() {
 	resources.forEach((resource) => {

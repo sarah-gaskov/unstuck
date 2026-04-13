@@ -86,6 +86,22 @@ class ApiService {
   }
 
   //== New entry to DB ==
+  
+  //Get question + all answers to question
+  Future<List> getQAndA() async {
+	try {
+      final response = await http.get(Uri.parse('$baseUrl/qna'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Connection error: $e');
+      return [];
+    }
+  }
+  
+  //- New entry to DB -
 
   //POST - Add an inquiry to the database
   Future<bool> addInquiry(String title, String body) async {
