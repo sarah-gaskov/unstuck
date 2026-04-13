@@ -33,7 +33,7 @@ app.post('/api/register', async (req, res) => {
 		const saltRounds = 10;
 		const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username`;
+		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING user_id, username`;
 		const result = await pool.query(query, [username, hashedPassword]); //
 
 		res.status(201).json({ success: true, user: result.rows[0] });
