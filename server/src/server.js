@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 app.use(express.json());
 
-const resources = ['inquiries', 'answers'];
+const resources = ['inquiries', 'answers', 'users'];
 
 get_resources();
 add_resources();
