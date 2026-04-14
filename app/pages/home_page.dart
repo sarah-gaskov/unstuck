@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../api_service.dart';
 import 'ask_page.dart';
+import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String username;
+  const HomePage({super.key, required this.username});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -12,6 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ApiService api = ApiService();
   List inquiries = [];
+  List answers = [];
 
   @override
   void initState() {
@@ -20,10 +23,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadData() async {
-    List data = await api.getInquiries();
+    List inqData = await api.getInquiries();
+    List ansData = await api.getAnswers();
     setState(() {
-      inquiries = data;
+      inquiries = inqData;
+      answers = ansData;
     });
+  }
+
+  List getAnswersForInquiry(int inquiryId) {
+    return answers.where((a) => a['inquiry_id'] == inquiryId).toList();
   }
 
   @override
@@ -36,18 +45,21 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.deepPurple),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.deepPurple),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 30,
                     child: Icon(Icons.person, size: 30),
                   ),
-                  SizedBox(height: 8),
-                  Text('User Name', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.username,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -71,7 +83,11 @@ class _HomePageState extends State<HomePage> {
               leading: const Icon(Icons.logout),
               title: const Text('Sign out'),
               onTap: () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
               },
             ),
           ],
@@ -81,10 +97,40 @@ class _HomePageState extends State<HomePage> {
         itemCount: inquiries.length,
         itemBuilder: (context, index) {
           final item = inquiries[index];
-          return ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.person)),
-            title: Text(item['title'] ?? 'No title'),
-            subtitle: Text(item['body'] ?? ''),
+          final inquiryAnswers = getAnswersForInquiry(item['inquiry_id']);
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 16,
+                        child: Icon(Icons.person, size: 16),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        item['title'] ?? 'No title',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(item['body'] ?? ''),
+                  if (inquiryAnswers.isNotEmpty) ...[
+                    const Divider(),
+                    const Text('Answers:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ...inquiryAnswers.map((answer) => Padding(
+                      padding: const EdgeInsets.only(top: 4, left: 8),
+                      child: Text('• ${answer['body']}'),
+                    )),
+                  ],
+                ],
+              ),
+            ),
           );
         },
       ),
