@@ -113,16 +113,16 @@ class ApiService {
   }
   
   //Get question + all answers to question
-  Future<List> getQAndA() async {
+  Future<List> getBoard() async {
 	try {
-      final response = await http.get(Uri.parse('$baseUrl/qna'));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return [];
+		final response = await http.get(Uri.parse('$baseUrl/board'));
+		if (response.statusCode == 200) {
+			return jsonDecode(response.body);
+		}
+		return [];
     } catch (e) {
-      print('Connection error: $e');
-      return [];
+		print('Connection error: $e');
+		return [];
     }
   }
   
