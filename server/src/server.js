@@ -75,7 +75,7 @@ app.post('/api/login', async (req, res) => {
 		res.status(200).json({ 
 			success: true, 
 			message: 'Login successful', 
-			user: { id: user.id, username: user.username } 
+			user: { id: user.user_id, username: user.username } 
 		});
 
 	} catch (error) {
@@ -94,10 +94,10 @@ app.post('/api/login-guest', async (req, res) => {
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(guestId.toString(), salt);
 		
-		const query = `INSERT INTO users (username, password, is_anonymous) VALUES ($1, $2, true) RETURNING username`;
+		const query = `INSERT INTO users (username, password, is_anonymous) VALUES ($1, $2, true) RETURNING user_id, username`;
 		const result = await pool.query(query, [username, hashedPassword]);
 		
-		res.status(200).json({ success: true, username: result.rows[0].username });
+		res.status(200).json({ success: true, username: result.rows[0].username, user_id: result.rows[0].user_id });
 	} catch (error) {
 		console.error('Guest login error:', error);
 		res.status(500).json({ message: 'Guest login failed' });
@@ -126,11 +126,14 @@ function get_board() {
 			const query = `
 				SELECT i.*, 
 					   COALESCE(
-						   json_agg(a.*) FILTER (WHERE a.inquiry_id IS NOT NULL), 
+						   json_agg(
+                               to_jsonb(a.*) || jsonb_build_object('username', u.username)
+                           ) FILTER (WHERE a.inquiry_id IS NOT NULL), 
 						   '[]'
 					   ) as answers 
 				FROM inquiries i 
 				LEFT JOIN answers a ON i.inquiry_id = a.inquiry_id 
+				LEFT JOIN users u ON a.user_id = u.user_id
 				GROUP BY i.inquiry_id
 				ORDER BY i.inquiry_id DESC;
 			`;

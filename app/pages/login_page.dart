@@ -36,14 +36,14 @@ class _LoginPageState extends State<LoginPage> {
     setState(() { _isLoading = true; });
     
     if (isLogin) {
-      String? loggedInUser = await api.loginUser(username, password);
+      final userData = await api.loginUser(username, password);
       setState(() { _isLoading = false; });
       
-      if (loggedInUser != null) {
+      if (userData != null) {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(username: loggedInUser)),
+          MaterialPageRoute(builder: (context) => HomePage(username: userData['username'], userId: userData['userId'],)),
         );
       } else {
         if (!mounted) return;
@@ -135,13 +135,13 @@ class _LoginPageState extends State<LoginPage> {
 					child: OutlinedButton(
 						onPressed: () async {
 							setState(() {_isLoading = true; });
-							String? guestUsername = await api.loginGuest();
+							final guestData = await api.loginGuest();
 							setState(() {_isLoading = false; });
 							
-							if (guestUsername != null && mounted) {
+							if (guestData != null && mounted) {
 								Navigator.pushReplacement(
 									context,
-									MaterialPageRoute(builder: (context) => HomePage(username: guestUsername)),
+									MaterialPageRoute(builder: (context) => HomePage(username: guestData['username'], userId: guestData['userId'],)),
 								);
 							} else  if (mounted) {
 								ScaffoldMessenger.of(context).showSnackBar(

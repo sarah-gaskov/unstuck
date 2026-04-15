@@ -5,7 +5,8 @@ import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
-  const HomePage({super.key, required this.username});
+  final int userId;
+  const HomePage({super.key, required this.username, required this.userId});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,6 +28,40 @@ class _HomePageState extends State<HomePage> {
       boardData = data;
     });
   }
+  
+  Future<void> _showAnswerDialog(int inquiryId) async {
+	TextEditingController answerController = TextEditingController();
+	return showDialog(
+		context: context,
+		builder: (context) {
+			return AlertDialog(
+				title: const Text('Add Answer'),
+				content: TextField(
+					controller: answerController,
+					decoration: const InputDecoration(hintText: 'Type your answer here...'),
+					maxLines: 3,
+				),
+				actions: [
+					TextButton(
+						onPressed: () => Navigator.pop(context),
+						child: const Text('Cancel'),
+					),
+					ElevatedButton(
+						onPressed: () async {
+							if (answerController.text.trim().isNotEmpty) {
+								await api.addAnswer(inquiryId, answerController.text, widget.userId);
+								if (!mounted) return;
+								Navigator.pop(context);
+								loadData();
+							}
+						},
+						child: const Text('Submit'),
+					),
+				],
+			);
+		},
+	);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +141,11 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+					mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const CircleAvatar(
+					 Row(
+					  children: [
+                       const CircleAvatar(
                         radius: 16,
                         child: Icon(Icons.person, size: 16),
                       ),
@@ -118,6 +156,16 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
+				  IconButton(
+					icon: const Icon(Icons.reply),
+					tooltip: 'Reply to question',
+					onPressed: () {
+						_showAnswerDialog(item['inquiry_id']);
+					},
+				   ),
+				  ],
+				 ),
+				  
                   const SizedBox(height: 4),
                   Text(item['body'] ?? ''),
                   if (answers.isNotEmpty) ...[

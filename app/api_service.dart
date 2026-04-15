@@ -34,7 +34,7 @@ class ApiService {
     }
   }
 
-  Future<String?> loginUser(String username, String password) async {
+  Future<Map<String, dymanic>?> loginUser(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
@@ -46,7 +46,10 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['user']['username'];
+        return {
+			'username': data['user']['username'],
+			'userId': data['user']['id'],
+		};
       }
       return null;
     } catch (e) {
@@ -55,12 +58,15 @@ class ApiService {
     }
   }
   
-  Future<String?> loginGuest() async {
+  Future<Map<String, dynamic>?> loginGuest() async {
 		try {			
 			final response = await http.get(Uri.parse('$baseUrl/login-guest'));
 			if (response.statusCode == 200) {
 				final data = jsonDecode(response.body);
-				return data['username'];
+				return {
+					'username': data['username'],
+					'userId': data['user_id'],
+				}
 			}
 			
 			return null;
@@ -151,7 +157,7 @@ class ApiService {
   }
 
   //POST - Add an answer to the db
-  Future<bool> addAnswer(int inquiryId, String answerText) async {
+  Future<bool> addAnswer(int inquiryId, String answerText, String userId) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/create-entry'),
@@ -161,6 +167,7 @@ class ApiService {
           'data': {
             'inquiry_id': inquiryId,
             'body': answerText,
+			'user_id': userId
           },
         }),
       );
