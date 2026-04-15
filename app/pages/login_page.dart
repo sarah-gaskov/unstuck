@@ -130,15 +130,28 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HomePage(username: 'Guest')),
-                      );
-                    },
-                    child: const Text('Continue as guest'),
-                  ),
+                  child: SizedBox (
+					width: double.infinity,
+					child: OutlinedButton(
+						onPressed: () async {
+							setState(() {_isLoading = true; });
+							String? guestUsername = await api.loginGuest();
+							setState(() {_isLoading = false; })'
+							
+							if (guestUsername != null && mounted) {
+								Navigator.pushReplacement(
+									context,
+									MaterialPageRoute(builder: (context) => HomePage(username: guestUsername)),
+								);
+							} else  if (mounted) {
+								ScaffoldMessenger.of(context).showSnackBar(
+									const SnackBar(content: Text('Could not create guest account')),
+								);
+							}
+						},
+						child: const Text('Continue as guest'),
+					),
+				  ),
                 ),
               ],
             ],
