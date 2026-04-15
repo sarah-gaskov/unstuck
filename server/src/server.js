@@ -83,6 +83,10 @@ app.post('/api/login', async (req, res) => {
 	}
 });
 
+app.post('/api/login-guest', async (req, res) => {
+	
+});
+
 // -- Q and A --
 
 // Get QnA (Question and all the answers relating to it)

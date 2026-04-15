@@ -54,8 +54,19 @@ class ApiService {
       return null;
     }
   }
+  
+  Future<bool> loginGuest(String username, String password) async {
+		try {			
+			final response = await http.get(Uri.parse('$baseUrl/login-guest'));
+			
+			return response.statusCode == 200;
+		} catch (e) {
+			print('Login error: $e');
+			return false; // Return false if the request fails
+		}
+	}
 
-  // == Read from the DB ==
+  // == Get Inquiry Data ==
 
   //Get all inquiries from database
   Future<List> getInquiries() async {
@@ -84,8 +95,6 @@ class ApiService {
       return [];
     }
   }
-
-  //== New entry to DB ==
   
   //Get question + all answers to question
   Future<List> getQAndA() async {
@@ -101,21 +110,7 @@ class ApiService {
     }
   }
   
-  //Get question + all answers to question
-  Future<List> getQAndA() async {
-	try {
-      final response = await http.get(Uri.parse('$baseUrl/qna'));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return [];
-    } catch (e) {
-      print('Connection error: $e');
-      return [];
-    }
-  }
-  
-  //- New entry to DB -
+  // = Edit Inquiry Data =
 
   //POST - Add an inquiry to the database
   Future<bool> addInquiry(String title, String body) async {
