@@ -75,7 +75,13 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sign out'),
-              onTap: () {
+              onTap: () async {
+				if (widget.username.stardsWith('Guest_')) { //TODO: include better condition... what if someone made their username this?
+					await api.deleteGuest(widget.username);
+				}
+				
+				if (!mounted) return;
+			  
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -90,7 +96,8 @@ class _HomePageState extends State<HomePage> {
         itemCount: inquiries.length,
         itemBuilder: (context, index) {
           final item = inquiries[index];
-          final inquiryAnswers = getAnswersForInquiry(item['inquiry_id']);
+          final answers = item['answers'] as List? ?? [];
+		  
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Padding(
@@ -113,10 +120,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 4),
                   Text(item['body'] ?? ''),
-                  if (inquiryAnswers.isNotEmpty) ...[
+                  if (answers.isNotEmpty) ...[
                     const Divider(),
                     const Text('Answers:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    ...inquiryAnswers.map((answer) => Padding(
+                    ...answers.map((answer) => Padding(
                       padding: const EdgeInsets.only(top: 4, left: 8),
                       child: Text('• ${answer['body']}'),
                     )),
