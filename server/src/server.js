@@ -121,7 +121,7 @@ app.delete('/api/delete-guest', async (req, res) => {
 
 // Get board (all questions and all relevant answers)
 function get_board() {
-	app.get(`/api/board`, async (req, res) => {
+	app.get('/api/board', async (req, res) => {
 		try {
 		const query = `
 			SELECT i.*, 
