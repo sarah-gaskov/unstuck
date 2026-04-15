@@ -55,14 +55,18 @@ class ApiService {
     }
   }
   
-  Future<bool> loginGuest(String username, String password) async {
+  Future<String?> loginGuest(String username, String password) async {
 		try {			
 			final response = await http.get(Uri.parse('$baseUrl/login-guest'));
+			if (response.statusCode == 200) {
+				final data = jsonDecode(response.body);
+				return data['username'];
+			}
 			
-			return response.statusCode == 200;
+			return null
 		} catch (e) {
 			print('Login error: $e');
-			return false; // Return false if the request fails
+			return null
 		}
 	}
 
