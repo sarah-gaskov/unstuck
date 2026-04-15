@@ -123,23 +123,23 @@ app.delete('/api/delete-guest', async (req, res) => {
 function get_board() {
 	app.get('/api/board', async (req, res) => {
 		try {
-		const query = `
-			SELECT i.*, 
-			       COALESCE(
-			           json_agg(a.*) FILTER (WHERE a.inquiry_id IS NOT NULL), 
-			           '[]'
-			       ) as answers 
-			FROM inquiries i 
-			LEFT JOIN answers a ON i.inquiry_id = a.inquiry_id 
-			GROUP BY i.inquiry_id
-			ORDER BY i.inquiry_id DESC;
-		`;
-		const { rows } = await pool.query(query);
-		res.json(rows);
-	} catch (error) {
-		console.error('Error fetching QnA:', error);
-		res.status(500).json({ message: 'Database query error' });
-	}
+			const query = `
+				SELECT i.*, 
+					   COALESCE(
+						   json_agg(a.*) FILTER (WHERE a.inquiry_id IS NOT NULL), 
+						   '[]'
+					   ) as answers 
+				FROM inquiries i 
+				LEFT JOIN answers a ON i.inquiry_id = a.inquiry_id 
+				GROUP BY i.inquiry_id
+				ORDER BY i.inquiry_id DESC;
+			`;
+			const { rows } = await pool.query(query);
+			res.json(rows);
+		} catch (error) {
+			console.error('Error fetching QnA:', error);
+			res.status(500).json({ message: 'Database query error' });
+		}
 	});
 }
 
