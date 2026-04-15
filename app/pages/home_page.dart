@@ -13,8 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ApiService api = ApiService();
-  List inquiries = [];
-  List answers = [];
+  List boardData = [];
 
   @override
   void initState() {
@@ -23,16 +22,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadData() async {
-    List inqData = await api.getInquiries();
-    List ansData = await api.getAnswers();
+    List data = await api.getBoard();
     setState(() {
-      inquiries = inqData;
-      answers = ansData;
+      boardData = data;
     });
-  }
-
-  List getAnswersForInquiry(int inquiryId) {
-    return answers.where((a) => a['inquiry_id'] == inquiryId).toList();
   }
 
   @override
