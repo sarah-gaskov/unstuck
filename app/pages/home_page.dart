@@ -173,7 +173,7 @@ class _HomePageState extends State<HomePage> {
                     const Text('Answers:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     ...answers.map((answer) => Padding(
                       padding: const EdgeInsets.only(top: 4, left: 8),
-                      child: Text('• ${answer['body']}'),
+                      child: Text('• ${answer['username'] ?? 'Unknown'}: ${answer['body']}'),
                     )),
                   ],
                 ],

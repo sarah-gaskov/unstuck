@@ -34,7 +34,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dymanic>?> loginUser(String username, String password) async {
+  Future<Map<String, dynamic>?> loginUser(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
@@ -60,13 +60,13 @@ class ApiService {
   
   Future<Map<String, dynamic>?> loginGuest() async {
 		try {			
-			final response = await http.get(Uri.parse('$baseUrl/login-guest'));
+			final response = await http.post(Uri.parse('$baseUrl/login-guest'));
 			if (response.statusCode == 200) {
 				final data = jsonDecode(response.body);
 				return {
 					'username': data['username'],
 					'userId': data['user_id'],
-				}
+				};
 			}
 			
 			return null;
