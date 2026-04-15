@@ -139,7 +139,6 @@ class ApiService {
           'data': {
             'body': body,
             'title': title,
-            'chosen_answer_id': null,
             'is_solved': false,
           },
         }),
