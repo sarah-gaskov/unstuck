@@ -63,10 +63,10 @@ class ApiService {
 				return data['username'];
 			}
 			
-			return null
+			return null;
 		} catch (e) {
 			print('Login error: $e');
-			return null
+			return null;
 		}
 	}
 	
