@@ -132,7 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: SizedBox (
 					width: double.infinity,
-					child: OutlinedButton( 
+					child: OutlinedButton(
 						onPressed: () async {
 							setState(() {_isLoading = true; });
 							final guestData = await api.loginGuest();
