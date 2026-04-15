@@ -136,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
 						onPressed: () async {
 							setState(() {_isLoading = true; });
 							String? guestUsername = await api.loginGuest();
-							setState(() {_isLoading = false; })'
+							setState(() {_isLoading = false; });
 							
 							if (guestUsername != null && mounted) {
 								Navigator.pushReplacement(

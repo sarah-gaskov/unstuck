@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
               leading: const Icon(Icons.logout),
               title: const Text('Sign out'),
               onTap: () async {
-				if (widget.username.stardsWith('Guest_')) { //TODO: include better condition... what if someone made their username this?
+				if (widget.username.startsWith('Guest_')) { //TODO: include better condition... what if someone made their username this?
 					await api.deleteGuest(widget.username);
 				}
 				
@@ -93,9 +93,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: ListView.builder(
-        itemCount: inquiries.length,
+        itemCount: boardData.length,
         itemBuilder: (context, index) {
-          final item = inquiries[index];
+          final item = boardData[index];
           final answers = item['answers'] as List? ?? [];
 		  
           return Card(

@@ -55,7 +55,7 @@ class ApiService {
     }
   }
   
-  Future<String?> loginGuest(String username, String password) async {
+  Future<String?> loginGuest() async {
 		try {			
 			final response = await http.get(Uri.parse('$baseUrl/login-guest'));
 			if (response.statusCode == 200) {
