@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./config/db');
-//const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -30,11 +30,11 @@ app.post('/api/register', async (req, res) => {
 			return res.status(400).json({ message: 'Username and password are required' });
 		}
 
-		//const salt = bcrypt.genSaltSync(10);
-		//const hashedPassword = await bcrypt.hashSync(password, salt);
+		const salt = await bcrypt.genSaltSync(10);
+		const hashedPassword = await bcrypt.hashSync(password, salt);
 
 		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING user_id, username`;
-		const result = await pool.query(query, [username, password]); //
+		const result = await pool.query(query, [username, hashedPassword]); //
 
 		res.status(201).json({ success: true, user: result.rows[0] });
 
@@ -65,7 +65,7 @@ app.post('/api/login', async (req, res) => {
 
 		const user = result.rows[0];
 
-		const isMatch = (password === user.password)
+		const isMatch = await bcrypt.compare(password, user.password)
 
 		if (!isMatch) {
 			return res.status(401).json({ message: 'Invalid username or password' });
