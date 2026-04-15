@@ -5,7 +5,7 @@ import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
-  final int userId;
+  final String userId;
   const HomePage({super.key, required this.username, required this.userId});
 
   @override
