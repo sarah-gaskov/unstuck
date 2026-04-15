@@ -11,6 +11,7 @@ const resources = ['inquiries', 'answers', 'users'];
 
 get_resources();
 add_resources();
+get_board();
 
 // Start the server
 app.get('/', (req, res) => { res.send('Backend server is running!'); });
