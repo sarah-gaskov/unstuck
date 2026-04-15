@@ -83,29 +83,62 @@ app.post('/api/login', async (req, res) => {
 	}
 });
 
+// Add Guest
+
 app.post('/api/login-guest', async (req, res) => {
-	
+	try {
+		const guestId = Math.floor(100000 + Math.random() * 900000); //TODO: Have the DB do this instead
+		const username = `Guest_${guestId}`;
+		
+		const salt = await bcrypt.genSalt(10);
+		const hashedPassword = await bcrypt.hash(guestId.toString(), salt);
+		
+		const query = `INSERT INTO users (username, password, is_anonymous) VALUES ($1, $2, true) RETURNING username`;
+		const result = await pool.query(query, [username, hashedPassword]);
+		
+		res.status(200).json({ success: true, username: result.rows[0].username });
+	} catch (error) {
+		console.error('Guest login error:', error);
+		res.status(500).json({ message: 'Guest login failed' });
+	}
+});
+
+// Remove Guest
+
+app.delete('/api/delete-guest', async (req, res) => {
+	try {
+		const { username } = req.body;
+		await pool.query(`DELETE FROM users WHERE username = $1 AND is_anonymous = true`, [username]);
+		res.status(200).json({ success: true, message: 'Guest deleted' });
+	} catch (error) {
+		console.error('Error deleting guest:', error);
+		res.status(500).json({ message: 'Failed to delete guest' });
+	}
 });
 
 // -- Q and A --
 
-// Get QnA (Question and all the answers relating to it)
-function get_qna() {
-	app.get(`/api/qna`, async (req, res) => {
+// Get board (all questions and all relevant answers)
+function get_board() {
+	app.get(`/api/board`, async (req, res) => {
 		try {
-			const { inquiry_id } = req.body;
-			const { inquiry_res } = await pool.query(`SELECT * FROM inquiries WHERE inquiry_id = $1`, [inquiry_id]);
-			const { answers_res } = await pool.query(`SELECT * FROM answers WHERE inquiry_id = $1`, [inquiry_id]);
-			
-			res.json({
-				inquiry: inquiry_res.rows[0] || null,
-				answers: answers_res.rows);
-			});
-				
-		} catch(error) {
-			console.error(`Error fetching ${resource}:`, error);
-			res.status(500).json({ message: 'Database query error' });
-		}
+		const query = `
+			SELECT i.*, 
+			       COALESCE(
+			           json_agg(a.*) FILTER (WHERE a.inquiry_id IS NOT NULL), 
+			           '[]'
+			       ) as answers 
+			FROM inquiries i 
+			LEFT JOIN answers a ON i.inquiry_id = a.inquiry_id 
+			GROUP BY i.inquiry_id
+			ORDER BY i.inquiry_id DESC;
+		`;
+		const { rows } = await pool.query(query);
+		res.json(rows);
+	} catch (error) {
+		console.error('Error fetching QnA:', error);
+		res.status(500).json({ message: 'Database query error' });
+	}
 	});
 }
 
