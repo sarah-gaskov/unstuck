@@ -69,6 +69,18 @@ class ApiService {
 			return null
 		}
 	}
+	
+	Future<void> deleteGuest(String username) async {
+		try {
+			await http.delete(
+				Uri.parse('$baseUrl/delete-guest'),
+				headers: {'Content-Type' : 'application/json'},
+				body: jsonEncode({'username': username}),
+			);
+		} catch (e) {
+			print('Error deleting guest: $e');
+		}
+	}
 
   // == Get Inquiry Data ==
 
