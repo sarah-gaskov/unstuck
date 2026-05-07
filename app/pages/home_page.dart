@@ -28,43 +28,45 @@ class _HomePageState extends State<HomePage> {
       boardData = data;
     });
   }
-  
+
   Future<void> _showAnswerDialog(int inquiryId) async {
-	TextEditingController answerController = TextEditingController();
-	return showDialog(
-		context: context,
-		builder: (context) {
-			return AlertDialog(
-				title: const Text('Add Answer'),
-				content: TextField(
-					controller: answerController,
-					decoration: const InputDecoration(hintText: 'Type your answer here...'),
-					maxLines: 3,
-				),
-				actions: [
-					TextButton(
-						onPressed: () => Navigator.pop(context),
-						child: const Text('Cancel'),
-					),
-					ElevatedButton(
-						onPressed: () async {
-							if (answerController.text.trim().isNotEmpty) {
-								await api.addAnswer(inquiryId, answerController.text, widget.userId);
-								if (!mounted) return;
-								Navigator.pop(context);
-								loadData();
-							}
-						},
-						child: const Text('Submit'),
-					),
-				],
-			);
-		},
-	);
-}
+    TextEditingController answerController = TextEditingController();
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Answer'),
+          content: TextField(
+            controller: answerController,
+            decoration: const InputDecoration(hintText: 'Type your answer here...'),
+            maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (answerController.text.trim().isNotEmpty) {
+                  await api.addAnswer(inquiryId, answerController.text, widget.userId);
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  loadData();
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bool isGuest = widget.username.startsWith('Guest_');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recent Questions'),
@@ -101,22 +103,21 @@ class _HomePageState extends State<HomePage> {
               title: const Text('My Questions'),
               onTap: () {},
             ),
-            ListTile(
-              leading: const Icon(Icons.rate_review),
-              title: const Text('My Answers'),
-              onTap: () {},
-            ),
+            if (!isGuest)
+              ListTile(
+                leading: const Icon(Icons.rate_review),
+                title: const Text('My Answers'),
+                onTap: () {},
+              ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sign out'),
               onTap: () async {
-				if (widget.username.startsWith('Guest_')) { //TODO: include better condition... what if someone made their username this?
-					await api.deleteGuest(widget.username);
-				}
-				
-				if (!mounted) return;
-			  
+                if (widget.username.startsWith('Guest_')) {
+                  await api.deleteGuest(widget.username);
+                }
+                if (!mounted) return;
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -132,7 +133,7 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final item = boardData[index];
           final answers = item['answers'] as List? ?? [];
-		  
+
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Padding(
@@ -141,19 +142,29 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-					mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-					 Row(
-					  children: [
-                       const CircleAvatar(
-                        radius: 16,
-                        child: Icon(Icons.person, size: 16),
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 16,
+                            child: Icon(Icons.person, size: 16),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            item['title'] ?? 'No title',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        item['title'] ?? 'No title',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                      if (!isGuest)
+                        IconButton(
+                          icon: const Icon(Icons.reply),
+                          tooltip: 'Reply to question',
+                          onPressed: () {
+                            _showAnswerDialog(item['inquiry_id']);
+                          },
+                        ),
                     ],
                   ),
 				  IconButton(
@@ -186,10 +197,12 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AskPage()),
+            MaterialPageRoute(builder: (context) => AskPage(
+              userId: widget.userId,
+              username: widget.username,
+            )),
           );
-		  
-		  loadData();
+          loadData();
         },
         child: const Icon(Icons.add),
       ),

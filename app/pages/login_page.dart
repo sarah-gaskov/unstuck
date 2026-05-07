@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../api_service.dart';
 import 'home_page.dart';
+import 'mechanic.dart';
+import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
   
-  Future<void> _handleAuth(bool isLogin) async {
+  Future<void> _handleLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
     
@@ -35,37 +37,33 @@ class _LoginPageState extends State<LoginPage> {
     
     setState(() { _isLoading = true; });
     
-    if (isLogin) {
-      final userData = await api.loginUser(username, password);
-      setState(() { _isLoading = false; });
-      
-      if (userData != null) {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage(username: userData['username'], userId: userData['userId'],)),
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed')),
-        );
-      }
-    } else {
-      bool success = await api.registerUser(username, password);
-      setState(() { _isLoading = false; });
-      
-      if (success) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registered! Please login now.')),
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed. Username may exist.')),
-        );
-      }
+    final userData = await api.loginUser(username, password);
+    setState(() { _isLoading = false; });
+    
+    if (userData != null) {
+  if (!mounted) return;
+  if (userData['isMechanic'] == true) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MechanicHomePage(
+        username: userData['username'],
+        userId: userData['userId'],
+      )),
+    );
+  } else {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage(
+        username: userData['username'],
+        userId: userData['userId'],
+      )),
+    );
+  }
+}else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login failed')),
+      );
     }
   }
 
@@ -112,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => _handleAuth(true),
+                    onPressed: _handleLogin,
                     child: const Text('LOGIN'),
                   ),
                 ),
@@ -120,7 +118,12 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => _handleAuth(false),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignupPage()),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple.shade50,
                     ),
@@ -130,28 +133,28 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  child: SizedBox (
-					width: double.infinity,
-					child: OutlinedButton(
-						onPressed: () async {
-							setState(() {_isLoading = true; });
-							final guestData = await api.loginGuest();
-							setState(() {_isLoading = false; });
-							
-							if (guestData != null && mounted) {
-								Navigator.pushReplacement(
-									context,
-									MaterialPageRoute(builder: (context) => HomePage(username: guestData['username'], userId: guestData['userId'],)),
-								);
-							} else  if (mounted) {
-								ScaffoldMessenger.of(context).showSnackBar(
-									const SnackBar(content: Text('Could not create guest account')),
-								);
-							}
-						},
-						child: const Text('Continue as guest'),
-					),
-				  ),
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      setState(() { _isLoading = true; });
+                      final guestData = await api.loginGuest();
+                      setState(() { _isLoading = false; });
+                      
+                      if (guestData != null && mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage(
+                            username: guestData['username'],
+                            userId: guestData['userId'],
+                          )),
+                        );
+                      } else if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not create guest account')),
+                        );
+                      }
+                    },
+                    child: const Text('Continue as guest'),
+                  ),
                 ),
               ],
             ],

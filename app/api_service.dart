@@ -3,12 +3,12 @@ import 'dart:convert';
 
 class ApiService {
   //main server URL on Fly.io
-  final String baseUrl = 'https://unstuck.fly.dev/api';
+  final String baseUrl = 'https://unstuck-test.fly.dev/api';
 
   //Check if server is running
   Future<bool> checkServer() async {
     try {
-      final response = await http.get(Uri.parse('https://unstuck.fly.dev/'));
+      final response = await http.get(Uri.parse('https://unstuck-test.fly.dev/'));
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -47,9 +47,10 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return {
-			'username': data['user']['username'],
-			'userId': data['user']['id'],
-		};
+          'username': data['user']['username'],
+          'userId': data['user']['id'],
+          'isMechanic': data['user']['is_mechanic'],
+        };
       }
       return null;
     } catch (e) {
@@ -88,9 +89,37 @@ class ApiService {
 		}
 	}
 
+  Future<Map<String, dynamic>?> loginGuest() async {
+    try {
+      final response = await http.post(Uri.parse('$baseUrl/login-guest'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'username': data['username'],
+          'userId': data['user_id'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Login error: $e');
+      return null;
+    }
+  }
+
+  Future<void> deleteGuest(String username) async {
+    try {
+      await http.delete(
+        Uri.parse('$baseUrl/delete-guest'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+    } catch (e) {
+      print('Error deleting guest: $e');
+    }
+  }
+
   // == Get Inquiry Data ==
 
-  //Get all inquiries from database
   Future<List> getInquiries() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/inquiries'));
@@ -104,7 +133,6 @@ class ApiService {
     }
   }
 
-  //Get all answers from database
   Future<List> getAnswers() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/answers'));
@@ -117,25 +145,24 @@ class ApiService {
       return [];
     }
   }
-  
-  //Get question + all answers to question
+
   Future<List> getBoard() async {
-	try {
-		final response = await http.get(Uri.parse('$baseUrl/board'));
-		if (response.statusCode == 200) {
-			return jsonDecode(response.body);
-		}
-		return [];
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/board'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
     } catch (e) {
-		print('Connection error: $e');
-		return [];
+      print('Connection error: $e');
+      return [];
     }
   }
-  
-  // = Edit Inquiry Data =
+
+  // == Edit Inquiry Data ==
 
   //POST - Add an inquiry to the database
-  Future<bool> addInquiry(String title, String body) async {
+  Future<bool> addInquiry(String title, String body, String userId) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/create-entry'),
@@ -146,6 +173,7 @@ class ApiService {
             'body': body,
             'title': title,
             'is_solved': false,
+            'asker_id': userId,
           },
         }),
       );
@@ -167,7 +195,7 @@ class ApiService {
           'data': {
             'inquiry_id': inquiryId,
             'body': answerText,
-			'user_id': userId
+            'user_id': userId,
           },
         }),
       );
