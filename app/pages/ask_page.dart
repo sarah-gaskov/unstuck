@@ -50,10 +50,38 @@ class _AskPageState extends State<AskPage> {
     }
   }
 
-    bool success = await api.addInquiry(
-      _titleController.text,
-      _bodyController.text,
-      widget.userId,
+  // 2. Show the Bottom Sheet for selection
+  void _showImageSourceOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        var listTile = ListTile(
+          leading: const Icon(Icons.camera_alt),
+          title: const Text('Take a Photo'),
+          onTap: () {
+            Navigator.pop(context);
+            _pickImage(ImageSource.camera);
+          },
+        );
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Pick from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              listTile,
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -132,14 +160,8 @@ class _AskPageState extends State<AskPage> {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _pickImage,
-                child: const Text('Capture Image'),
-              ),
-            ),
-            const SizedBox(height: 16),
+
+            // Image Preview/Capture Logic
             if (_imageFile != null)
               Stack(
                 alignment: Alignment.topRight,
@@ -171,7 +193,9 @@ class _AskPageState extends State<AskPage> {
                   minimumSize: const Size(double.infinity, 50),
                 ),
               ),
-            const SizedBox(height: 24),
+
+            const SizedBox(height: 32),
+
             SizedBox(
               width: double.infinity,
               height: 50,
