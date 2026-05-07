@@ -58,6 +58,36 @@ class ApiService {
       return null;
     }
   }
+  
+  Future<Map<String, dynamic>?> loginGuest() async {
+		try {			
+			final response = await http.post(Uri.parse('$baseUrl/login-guest'));
+			if (response.statusCode == 200) {
+				final data = jsonDecode(response.body);
+				return {
+					'username': data['username'],
+					'userId': data['user_id'],
+				};
+			}
+			
+			return null;
+		} catch (e) {
+			print('Login error: $e');
+			return null;
+		}
+	}
+	
+	Future<void> deleteGuest(String username) async {
+		try {
+			await http.delete(
+				Uri.parse('$baseUrl/delete-guest'),
+				headers: {'Content-Type' : 'application/json'},
+				body: jsonEncode({'username': username}),
+			);
+		} catch (e) {
+			print('Error deleting guest: $e');
+		}
+	}
 
   Future<Map<String, dynamic>?> loginGuest() async {
     try {

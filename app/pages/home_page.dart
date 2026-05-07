@@ -167,6 +167,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                     ],
                   ),
+				  IconButton(
+					icon: const Icon(Icons.reply),
+					tooltip: 'Reply to question',
+					onPressed: () {
+						_showAnswerDialog(item['inquiry_id']);
+					},
+				   ),
+				  ],
+				 ),
+				  
                   const SizedBox(height: 4),
                   Text(item['body'] ?? ''),
                   if (answers.isNotEmpty) ...[

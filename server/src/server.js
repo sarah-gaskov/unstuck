@@ -1,16 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./config/db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const port = process.env.PORT || 8080;
 app.use(express.json());
 
-const resources = ['inquiries', 'answers'];
+const resources = ['inquiries', 'answers', 'users'];
 
 get_resources();
 add_resources();
+get_board();
 
 // Start the server
 app.get('/', (req, res) => { res.send('Backend server is running!'); });
@@ -30,10 +31,10 @@ app.post('/api/register', async (req, res) => {
 			return res.status(400).json({ message: 'Username and password are required' });
 		}
 
-		const saltRounds = 10;
-		const hashedPassword = await bcrypt.hash(password, saltRounds);
+		const salt = await bcrypt.genSaltSync(10);
+		const hashedPassword = await bcrypt.hashSync(password, salt);
 
-		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username`;
+		const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING user_id, username`;
 		const result = await pool.query(query, [username, hashedPassword]); //
 
 		res.status(201).json({ success: true, user: result.rows[0] });
@@ -65,7 +66,7 @@ app.post('/api/login', async (req, res) => {
 
 		const user = result.rows[0];
 
-		const isMatch = await bcrypt.compare(password, user.password);
+		const isMatch = await bcrypt.compare(password, user.password)
 
 		if (!isMatch) {
 			return res.status(401).json({ message: 'Invalid username or password' });
@@ -74,7 +75,7 @@ app.post('/api/login', async (req, res) => {
 		res.status(200).json({ 
 			success: true, 
 			message: 'Login successful', 
-			user: { id: user.id, username: user.username } 
+			user: { id: user.user_id, username: user.username } 
 		});
 
 	} catch (error) {
@@ -83,7 +84,67 @@ app.post('/api/login', async (req, res) => {
 	}
 });
 
+// Add Guest
+
+app.post('/api/login-guest', async (req, res) => {
+	try {
+		const guestId = Math.floor(100000 + Math.random() * 900000); //TODO: Have the DB do this instead
+		const username = `Guest_${guestId}`;
+		
+		const salt = await bcrypt.genSalt(10);
+		const hashedPassword = await bcrypt.hash(guestId.toString(), salt);
+		
+		const query = `INSERT INTO users (username, password, is_anonymous) VALUES ($1, $2, true) RETURNING user_id, username`;
+		const result = await pool.query(query, [username, hashedPassword]);
+		
+		res.status(200).json({ success: true, username: result.rows[0].username, user_id: result.rows[0].user_id });
+	} catch (error) {
+		console.error('Guest login error:', error);
+		res.status(500).json({ message: 'Guest login failed' });
+	}
+});
+
+// Remove Guest
+
+app.delete('/api/delete-guest', async (req, res) => {
+	try {
+		const { username } = req.body;
+		await pool.query(`DELETE FROM users WHERE username = $1 AND is_anonymous = true`, [username]);
+		res.status(200).json({ success: true, message: 'Guest deleted' });
+	} catch (error) {
+		console.error('Error deleting guest:', error);
+		res.status(500).json({ message: 'Failed to delete guest' });
+	}
+});
+
 // -- Q and A --
+
+// Get board (all questions and all relevant answers)
+function get_board() {
+	app.get('/api/board', async (req, res) => {
+		try {
+			const query = `
+				SELECT i.*, 
+					   COALESCE(
+						   json_agg(
+                               to_jsonb(a.*) || jsonb_build_object('username', u.username)
+                           ) FILTER (WHERE a.inquiry_id IS NOT NULL), 
+						   '[]'
+					   ) as answers 
+				FROM inquiries i 
+				LEFT JOIN answers a ON i.inquiry_id = a.inquiry_id 
+				LEFT JOIN users u ON a.user_id = u.user_id
+				GROUP BY i.inquiry_id
+				ORDER BY i.inquiry_id DESC;
+			`;
+			const { rows } = await pool.query(query);
+			res.json(rows);
+		} catch (error) {
+			console.error('Error fetching QnA:', error);
+			res.status(500).json({ message: 'Database query error' });
+		}
+	});
+}
 
 // Database -> frontend
 function get_resources() {
