@@ -58,36 +58,6 @@ class ApiService {
       return null;
     }
   }
-  
-  Future<Map<String, dynamic>?> loginGuest() async {
-		try {			
-			final response = await http.post(Uri.parse('$baseUrl/login-guest'));
-			if (response.statusCode == 200) {
-				final data = jsonDecode(response.body);
-				return {
-					'username': data['username'],
-					'userId': data['user_id'],
-				};
-			}
-			
-			return null;
-		} catch (e) {
-			print('Login error: $e');
-			return null;
-		}
-	}
-	
-	Future<void> deleteGuest(String username) async {
-		try {
-			await http.delete(
-				Uri.parse('$baseUrl/delete-guest'),
-				headers: {'Content-Type' : 'application/json'},
-				body: jsonEncode({'username': username}),
-			);
-		} catch (e) {
-			print('Error deleting guest: $e');
-		}
-	}
 
   Future<Map<String, dynamic>?> loginGuest() async {
     try {
@@ -155,6 +125,54 @@ class ApiService {
       return [];
     } catch (e) {
       print('Connection error: $e');
+      return [];
+    }
+  }
+
+  //Get notifications
+  Future<List> getNotifications() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/notifications'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Connection error: $e');
+      return [];
+    }
+  }
+
+  // get only the questions that THIS user asked
+  // we pass userId so the server filters by asker_id in the inquiries table
+  // reference: GET /api/my-questions/:userId in server.js
+  Future<List> getMyQuestions(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/my-questions/$userId'),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching my questions: $e');
+      return [];
+    }
+  }
+
+  // get all answers THIS mechanic has submitted
+  // the server joins answers with inquiries so we also get the question title back
+  // reference: GET /api/my-answers/:userId in server.js
+  Future<List> getMyAnswers(String userId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/my-answers/$userId'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching my answers: $e');
       return [];
     }
   }

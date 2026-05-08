@@ -50,9 +50,7 @@ class ConfirmPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                    
+                    Navigator.popUntil(context, (route) => route.isFirst);
                   },
                   child: const Text('Back to Home'),
                 ),
