@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../api_service.dart';
 import 'ask_page.dart';
 import 'login_page.dart';
+import 'my_questions_page.dart';
+import 'notifications_page.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -96,12 +98,25 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Awaiting Actions'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.question_answer),
               title: const Text('My Questions'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyQuestionsPage(
+                userId: widget.userId,
+                username: widget.username,
+                )),
+               );
+              },
             ),
             if (!isGuest)
               ListTile(

@@ -129,6 +129,54 @@ class ApiService {
     }
   }
 
+  //Get notifications
+  Future<List> getNotifications() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/notifications'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Connection error: $e');
+      return [];
+    }
+  }
+
+  // get only the questions that THIS user asked
+  // we pass userId so the server filters by asker_id in the inquiries table
+  // reference: GET /api/my-questions/:userId in server.js
+  Future<List> getMyQuestions(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/my-questions/$userId'),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching my questions: $e');
+      return [];
+    }
+  }
+
+  // get all answers THIS mechanic has submitted
+  // the server joins answers with inquiries so we also get the question title back
+  // reference: GET /api/my-answers/:userId in server.js
+  Future<List> getMyAnswers(String userId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/my-answers/$userId'));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching my answers: $e');
+      return [];
+    }
+  }
+
   // == Edit Inquiry Data ==
 
   //POST - Add an inquiry to the database
