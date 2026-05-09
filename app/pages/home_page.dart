@@ -4,6 +4,7 @@ import 'ask_page.dart';
 import 'login_page.dart';
 import 'my_questions_page.dart';
 import 'notifications_page.dart';
+import 'my_answers_page.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -122,7 +123,15 @@ class _HomePageState extends State<HomePage> {
               ListTile(
                 leading: const Icon(Icons.rate_review),
                 title: const Text('My Answers'),
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyAnswersPage(
+                    userId: widget.userId, 
+                    username: widget.username,
+                    )),
+                  );
+                },
               ),
             const Divider(),
             ListTile(
