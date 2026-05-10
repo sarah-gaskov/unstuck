@@ -63,8 +63,8 @@ class _MyAnswersPageState extends State<MyAnswersPage> {
         'Mar',
         'Apr',
         'May',
-        'Jun'
-            'Jul',
+        'Jun',
+        'Jul',
         'Aug',
         'Sep',
         'Oct',
