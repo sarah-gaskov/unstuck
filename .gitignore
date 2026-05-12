@@ -1,8 +1,14 @@
+# Flutter
+android/
+build/
+web/
+.dart_tool/
+
 # Node.js dependencies
 node_modules/
 
-# Personal database credentials
+# Environment / credentials
 .env
 
-# Zone identifiers
+# Zone.Identifier files
 *:Zone.Identifier
