@@ -253,7 +253,7 @@ class _MechanicHomePageState extends State<MechanicHomePage>
               onTap: () {
                  Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                  MaterialPageRoute(builder: (context) => NotificationsPage(userId: widget.userId)),
                 );
               },
             ),
