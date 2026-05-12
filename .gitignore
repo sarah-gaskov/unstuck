@@ -3,3 +3,6 @@ node_modules/
 
 # Personal database credentials
 .env
+
+# Zone identifiers
+*:Zone.Identifier
