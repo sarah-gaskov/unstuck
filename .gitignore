@@ -3,6 +3,7 @@ android/
 build/
 web/
 .dart_tool/
+.flutter-plugins-dependencies
 
 # Node.js dependencies
 node_modules/
