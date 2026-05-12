@@ -79,7 +79,7 @@ void main() {
   // Test 11: getNotifications returns a List
   test('getNotifications returns a list', () async {
     final api = ApiService();
-    final result = await api.getNotifications();
+    final result = await api.getNotifications('0');
     expect(result, isA<List>());
   });
 

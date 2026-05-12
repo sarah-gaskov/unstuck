@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../api_service.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+  final String userId;
+  const NotificationsPage({super.key, required this.userId});
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -19,9 +20,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> loadNotifications() async {
-    List data = await api.getNotifications();
+    List data = await api.getNotifications(widget.userId);
     setState(() {
       notifications = data;
+    });
+  }
+
+  Future<void> _markRead(int id, int index) async {
+    await api.markNotificationRead(id);
+    setState(() {
+      notifications[index] = Map.from(notifications[index])..['is_read'] = true;
     });
   }
 
@@ -42,17 +50,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final item = notifications[index];
+                final bool isRead = item['is_read'] == true;
                 return ListTile(
                   leading: Icon(
-                    item['is_read'] == true
-                        ? Icons.notifications_none
-                        : Icons.notifications,
-                    color: item['is_read'] == true
-                        ? Colors.grey
-                        : Colors.deepPurple,
+                    isRead ? Icons.notifications_none : Icons.notifications,
+                    color: isRead ? Colors.grey : Colors.deepPurple,
                   ),
                   title: Text(item['message'] ?? 'No message'),
                   subtitle: Text(item['created_at'] ?? ''),
+                  onTap: isRead
+                      ? null
+                      : () => _markRead(item['notification_id'], index),
                 );
               },
             ),

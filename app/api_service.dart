@@ -130,9 +130,9 @@ class ApiService {
   }
 
   //Get notifications
-  Future<List> getNotifications() async {
+  Future<List> getNotifications(String userId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/notifications'));
+      final response = await http.get(Uri.parse('$baseUrl/notifications/$userId'));
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       }
@@ -140,6 +140,14 @@ class ApiService {
     } catch (e) {
       print('Connection error: $e');
       return [];
+    }
+  }
+
+  Future<void> markNotificationRead(int id) async {
+    try {
+      await http.patch(Uri.parse('$baseUrl/notifications/$id/read'));
+    } catch (e) {
+      print('Error marking notification as read: $e');
     }
   }
 
@@ -206,15 +214,12 @@ class ApiService {
   Future<bool> addAnswer(int inquiryId, String answerText, String userId) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/create-entry'),
+        Uri.parse('$baseUrl/add-answer'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'resource': 'answers',
-          'data': {
-            'inquiry_id': inquiryId,
-            'body': answerText,
-            'user_id': userId,
-          },
+          'inquiry_id': inquiryId,
+          'body': answerText,
+          'user_id': userId,
         }),
       );
       return response.statusCode == 200;
