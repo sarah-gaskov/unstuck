@@ -75,7 +75,7 @@ app.post('/api/login', async (req, res) => {
 		res.status(200).json({ 
 			success: true, 
 			message: 'Login successful', 
-			user: { id: user.user_id, username: user.username } 
+			user: { id: user.user_id, username: user.username, is_mechanic: user.is_mechanic }
 		});
 
 	} catch (error) {
@@ -118,6 +118,52 @@ app.delete('/api/delete-guest', async (req, res) => {
 });
 
 // -- Q and A --
+
+// Get notifications
+app.get('/api/notifications', async (req, res) => {
+	try {
+		const { rows } = await pool.query(`SELECT * FROM notifications ORDER BY created_at DESC`);
+		res.json(rows);
+	} catch (error) {
+		console.error('Error fetching notifications:', error);
+		res.status(500).json({ message: 'Database query error' });
+	}
+});
+
+// Get questions posted by a specific user
+app.get('/api/my-questions/:userId', async (req, res) => {
+	try {
+		const { userId } = req.params;
+		const { rows } = await pool.query(
+			`SELECT * FROM inquiries WHERE asker_id = $1 ORDER BY created_at DESC`,
+			[userId]
+		);
+		res.json(rows);
+	} catch (error) {
+		console.error('Error fetching my questions:', error);
+		res.status(500).json({ message: 'Database query error' });
+	}
+});
+
+// Get answers submitted by a specific mechanic with the asker's username
+app.get('/api/my-answers/:userId', async (req, res) => {
+	try {
+		const { userId } = req.params;
+		const { rows } = await pool.query(
+			`SELECT a.*, u.username
+			 FROM answers a
+			 JOIN inquiries i ON a.inquiry_id = i.inquiry_id
+			 JOIN users u ON i.asker_id = u.user_id
+			 WHERE a.user_id = $1
+			 ORDER BY a.created_at DESC`,
+			[userId]
+		);
+		res.json(rows);
+	} catch (error) {
+		console.error('Error fetching my answers:', error);
+		res.status(500).json({ message: 'Database query error' });
+	}
+});
 
 // Get board (all questions and all relevant answers)
 function get_board() {
