@@ -120,13 +120,59 @@ app.delete('/api/delete-guest', async (req, res) => {
 // -- Q and A --
 
 // Get notifications
-app.get('/api/notifications', async (req, res) => {
+app.get('/api/notifications/:userId', async (req, res) => {
 	try {
-		const { rows } = await pool.query(`SELECT * FROM notifications ORDER BY created_at DESC`);
+		const { userId } = req.params;
+		const { rows } = await pool.query(
+			`SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC`,
+			[userId]
+		);
 		res.json(rows);
 	} catch (error) {
 		console.error('Error fetching notifications:', error);
 		res.status(500).json({ message: 'Database query error' });
+	}
+});
+
+// Mark a notification as read
+app.patch('/api/notifications/:id/read', async (req, res) => {
+	try {
+		const { id } = req.params;
+		await pool.query(`UPDATE notifications SET is_read = true WHERE notification_id = $1`, [id]);
+		res.status(200).json({ success: true });
+	} catch (error) {
+		console.error('Error marking notification as read:', error);
+		res.status(500).json({ message: 'Database error' });
+	}
+});
+
+// Add an answer and notify the asker
+app.post('/api/add-answer', async (req, res) => {
+	try {
+		const { inquiry_id, body, user_id } = req.body;
+
+		const answerResult = await pool.query(
+			`INSERT INTO answers (inquiry_id, body, user_id) VALUES ($1, $2, $3) RETURNING *`,
+			[inquiry_id, body, user_id]
+		);
+
+		const inquiryResult = await pool.query(
+			`SELECT asker_id, title FROM inquiries WHERE inquiry_id = $1`,
+			[inquiry_id]
+		);
+
+		if (inquiryResult.rows.length > 0) {
+			const { asker_id, title } = inquiryResult.rows[0];
+			await pool.query(
+				`INSERT INTO notifications (user_id, message) VALUES ($1, $2)`,
+				[asker_id, `Your question "${title}" received an answer.`]
+			);
+		}
+
+		res.status(200).json({ success: true, data: answerResult.rows[0] });
+	} catch (error) {
+		console.error('Error adding answer:', error);
+		res.status(500).json({ message: 'Database error', error: error.message });
 	}
 });
 
